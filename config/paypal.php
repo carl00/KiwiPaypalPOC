@@ -1,4 +1,5 @@
 <?php
+
 namespace Sample;
 
 use PayPalCheckoutSdk\Core\PayPalHttpClient;

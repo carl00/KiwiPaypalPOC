@@ -20,108 +20,122 @@ class ApiController extends Controller
         $this->client = PayPalClient::client();
     }
 
-    public function createPaymentLink(Request $body) {
+    public function createPaymentLink(Request $body)
+    {
         try {
-            if($body->convert == false){
+            if ($body->convert == false) {
                 $amount = $body->amount;
-            }else{
+            } else {
                 $calc = $body->conversion["minutes"] * $body->conversion["rate"];
-                $amount = number_format($calc,2,'.','');
+                $amount = number_format($calc, 2, '.', '');
             }
-            
+
             $request = new OrdersCreateRequest();
             $request->prefer('return=representation');
             $request->body = [
-                                "intent" => "CAPTURE",
-                                "purchase_units" => [[
-                                    "reference_id" => "test_ref_id1",
-                                    "amount" => [
-                                        "value" => $amount,
-                                        "currency_code" => "INR"
-                                    ]
-                                ]],
-                                "application_context" => [
-                                    "cancel_url" => "https://example.com/cancel",
-                                    "return_url" => "https://example.com/return"
-                                ] 
-                            ];
+                "intent" => "CAPTURE",
+                "purchase_units" => [[
+                    "reference_id" => "test_ref_id1",
+                    "amount" => [
+                        "value" => $amount,
+                        "currency_code" => "INR"
+                    ]
+                ]],
+                "application_context" => [
+                    "cancel_url" => "https://example.com/cancel",
+                    "return_url" => "https://example.com/return"
+                ]
+            ];
 
-        
 
-                $response = $this->client->execute($request);
 
-                $data = array("errors" => false,
+            $response = $this->client->execute($request);
+
+            $data = array(
+                "errors" => false,
                 "success" => true,
-                "message"=>$response->result->status,
+                "message" => $response->result->status,
                 "data" => array(
-                    "order_id"=>$response->result->id,
+                    "order_id" => $response->result->id,
                     "payment_url" => $response->result->links[1]->href,
                     "meta" => $response
-                ));
+                )
+            );
 
-                return $data;
-
-        }catch (Exception $ex) { 
-            $data = array("errors" => true,
-            "success" => false,
-            "message"=>$ex->getMessage(),
-            "data" =>$ex);
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => $ex
+            );
 
             return $data;
         }
     }
 
-    public function getOrderById(Request $body) {
-        if($body->order_id){
-           $orderId = $body->order_id;
+    public function getOrderById(Request $body)
+    {
+        if ($body->order_id) {
+            $orderId = $body->order_id;
         }
         $request = new OrdersGetRequest($orderId);
         try {
             $response = $this->client->execute($request);
-            $data = array("errors" => false,
-            "success" => true,
-            "message"=>sprintf("Your Order Status is %s", $response->result->status),
-            "data" => array(
-                "status" => $response->result->status,
-                "meta" => $response
-            ));
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => sprintf("Your Order Status is %s", $response->result->status),
+                "data" => array(
+                    "status" => $response->result->status,
+                    "meta" => $response
+                )
+            );
 
             return $data;
-        }catch (Exception $ex) {
-            $data = array("errors" => true,
-            "success" => false,
-            "message"=>$ex->getMessage(),
-            "data" =>array(
-                "meta" => $ex
-            ));
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => array(
+                    "meta" => $ex
+                )
+            );
             return $data;
         }
     }
 
-    public function getOrderStatusById(Request $body) {
-        if($body->order_id){
-           $orderId = $body->order_id;
+    public function getOrderStatusById(Request $body)
+    {
+        if ($body->order_id) {
+            $orderId = $body->order_id;
         }
         $request = new OrdersCaptureRequest($orderId);
         $request->prefer('return=representation');
         try {
             $response = $this->client->execute($request);
-            $data = array("errors" => false,
-            "success" => true,
-            "message"=>sprintf("Your Order Status is %s",$response->result->status),
-            "data" => array(
-                "status" => $response->result->status,
-                "meta" => $response
-            ));
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => sprintf("Your Order Status is %s", $response->result->status),
+                "data" => array(
+                    "status" => $response->result->status,
+                    "meta" => $response
+                )
+            );
 
             return $data;
-        }catch (Exception $ex) {
-            $data = array("errors" => true,
-            "success" => false,
-            "message"=>$ex->getMessage(),
-            "data" =>array(
-                "meta" => $ex
-            ));
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => array(
+                    "meta" => $ex
+                )
+            );
             return $data;
         }
     }
