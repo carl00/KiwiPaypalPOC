@@ -6,6 +6,8 @@ use Exception;
 use Illuminate\Http\Request;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
+use PayPalCheckoutSdk\Orders\OrdersGetRequest;
+
 use Sample\PayPalClient;
 
 
@@ -69,6 +71,33 @@ class ApiController extends Controller
         }
     }
 
+    public function getOrderById(Request $body) {
+        if($body->order_id){
+           $orderId = $body->order_id;
+        }
+        $request = new OrdersGetRequest($orderId);
+        try {
+            $response = $this->client->execute($request);
+            $data = array("errors" => false,
+            "success" => true,
+            "message"=>sprintf("Your Order Status is %s", $response->result->status),
+            "data" => array(
+                "status" => $response->result->status,
+                "meta" => $response
+            ));
+
+            return $data;
+        }catch (Exception $ex) {
+            $data = array("errors" => true,
+            "success" => false,
+            "message"=>$ex->getMessage(),
+            "data" =>array(
+                "meta" => $ex
+            ));
+            return $data;
+        }
+    }
+
     public function getOrderStatusById(Request $body) {
         if($body->order_id){
            $orderId = $body->order_id;
@@ -79,7 +108,7 @@ class ApiController extends Controller
             $response = $this->client->execute($request);
             $data = array("errors" => false,
             "success" => true,
-            "message"=>`Your Payment is {$response->result->status}`,
+            "message"=>sprintf("Your Order Status is %s",$response->result->status),
             "data" => array(
                 "status" => $response->result->status,
                 "meta" => $response

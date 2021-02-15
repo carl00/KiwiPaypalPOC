@@ -20,3 +20,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('v1/payment', 'ApiController@createPaymentLink');
 Route::post('v1/status', 'ApiController@getOrderStatusById');
+Route::post('v1/order', 'ApiController@getOrderById');
