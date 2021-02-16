@@ -35,7 +35,6 @@ class ApiController extends Controller
     {
         try {
             $order = new Order;
-
             if ($body->convert == false) {
                 $amount = $body->amount;
                 $order->amount = $body->amount;
@@ -67,23 +66,34 @@ class ApiController extends Controller
 
             $response = $this->client->execute($request);
 
+            $orderId = $response->result->id;
+            $status = $response->result->status;
+
+            //creaing a log for just created order
+            $logs = new Logs;
+            $logs->order_id = $orderId;
+            $logs->status = $status;
+            $logs->meta = json_encode($response);
+            $logs->save();
+
             $data = array(
                 "errors" => false,
                 "success" => true,
-                "message" => $response->result->status,
+                "message" => $status,
                 "data" => array(
-                    "order_id" => $response->result->id,
+                    "order_id" => $orderId,
                     "payment_url" => $response->result->links[1]->href,
                     "meta" => $response
                 )
             );
 
-            $order->id = $response->result->id;
-            $order->status = $response->result->status;
+            $order->id = $orderId;
+            $order->status = $status;
             $order->meta = json_encode($response);
             $order->payer_email = json_encode($response->result->purchase_units[0]->payee->email_address);
             $order->payer_json = json_encode($response->result->purchase_units[0]->payee);
             $order->save();
+
             return $data;
         } catch (Exception $ex) {
             $data = array(
@@ -116,6 +126,47 @@ class ApiController extends Controller
             );
 
             return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => array(
+                    "meta" => $ex
+                )
+            );
+            return $data;
+        }
+    }
+
+    public function getOrderHistoryById(Request $body)
+    {
+        if ($body->order_id) {
+            $orderId = $body->order_id;
+        }
+        try {
+            if (Logs::where('order_id', $orderId)->exists()) {
+                $orderHistory = Logs::where('order_id', $orderId)->latest()->get();
+
+                $data = array(
+                    "errors" => false,
+                    "success" => true,
+                    "message" => sprintf(" Order Hisory fetched"),
+                    "data" => array(
+                        "status" => 200,
+                        "meta" => $orderHistory
+                    )
+                );
+
+                return $data;
+            } else {
+                $data = array(
+                    "errors" => true,
+                    "success" => false,
+                    "message" => "Order Id not found, please check your order id",
+                );
+                return $data;
+            }
         } catch (Exception $ex) {
             $data = array(
                 "errors" => true,

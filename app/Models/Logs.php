@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Logs extends Model
 {
     use HasFactory;
-    protected $table = 'orders';
-    protected $fillable = ['order_id', 'status', 'date', 'meta'];
+    protected $table = 'logs';
+    protected $fillable = ['order_id', 'status','meta'];
 }
