@@ -17,8 +17,6 @@ class CreateOrdersTable extends Migration
             $table->string('id')->unique();
             $table->string('payer_email');
             $table->json('payer_json');
-            $table->string('client_email');
-            $table->json('client_json');
             $table->json('meta');
             $table->string('amount');
             $table->string('minutes')->nullable();

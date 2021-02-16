@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
+use App\Models\Logs;
 use Exception;
 use Illuminate\Http\Request;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
@@ -32,11 +34,16 @@ class ApiController extends Controller
     public function createPaymentLink(Request $body)
     {
         try {
+            $order = new Order;
+
             if ($body->convert == false) {
                 $amount = $body->amount;
+                $order->amount = $body->amount;
             } else {
                 $calc = $body->conversion["minutes"] * $body->conversion["rate"];
                 $amount = number_format($calc, 2, '.', '');
+                $order->minutes = $body->conversion["minutes"];
+                $order->amount = $amount;
             }
 
             $request = new OrdersCreateRequest();
@@ -71,6 +78,12 @@ class ApiController extends Controller
                 )
             );
 
+            $order->id = $response->result->id;
+            $order->status = $response->result->status;
+            $order->meta = json_encode($response);
+            $order->payer_email = json_encode($response->result->purchase_units[0]->payee->email_address);
+            $order->payer_json = json_encode($response->result->purchase_units[0]->payee);
+            $order->save();
             return $data;
         } catch (Exception $ex) {
             $data = array(
