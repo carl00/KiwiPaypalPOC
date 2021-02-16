@@ -271,7 +271,6 @@ class ApiController extends Controller
             );
 
             return $data;
-
         } catch (Exception $ex) {
             $data = array(
                 "errors" => true,

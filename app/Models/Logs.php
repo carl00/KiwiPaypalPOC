@@ -9,5 +9,5 @@ class Logs extends Model
 {
     use HasFactory;
     protected $table = 'logs';
-    protected $fillable = ['order_id', 'status','meta'];
+    protected $fillable = ['order_id', 'status', 'meta'];
 }
