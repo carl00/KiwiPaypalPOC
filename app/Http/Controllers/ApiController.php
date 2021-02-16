@@ -245,4 +245,42 @@ class ApiController extends Controller
             return $data;
         }
     }
+
+    public function webhookListener(Request $request)
+    {
+        try {
+
+            $data = $request->body;
+            $orderId = $data["resource"]["id"];
+            $status = $data["resource"]["status"];
+
+            $logs = new Logs;
+            $logs->order_id = $orderId;
+            $logs->status = $status;
+            $logs->meta = json_encode($data);
+            $logs->save();
+
+            if (Order::where('id', $orderId)->exists()) {
+                Order::where('id', $orderId)->update(['status' => $status]);
+            }
+
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => "successfully logged and updated",
+            );
+
+            return $data;
+
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => $ex
+            );
+
+            return $data;
+        }
+    }
 }
