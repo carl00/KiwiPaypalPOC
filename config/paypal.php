@@ -1,6 +1,6 @@
 <?php
 
-namespace Sample;
+namespace kiwi;
 
 use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
@@ -9,7 +9,7 @@ ini_set('error_reporting', E_ALL); // or error_reporting(E_ALL);
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 
-class PayPalClient
+class KiwiPayPalClient
 {
     /**
      * Returns PayPal HTTP client instance with environment that has access

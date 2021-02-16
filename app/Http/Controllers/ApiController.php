@@ -7,9 +7,18 @@ use Illuminate\Http\Request;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
 use PayPalCheckoutSdk\Orders\OrdersGetRequest;
+use PayPalHttp\HttpRequest;
+use kiwi\KiwiPayPalClient;
 
-use Sample\PayPalClient;
 
+class WebhookCreateRequest extends HttpRequest
+{
+    function __construct()
+    {
+        parent::__construct("/v1/notifications/webhooks", "POST");
+        $this->headers["Content-Type"] = "application/json";
+    }
+}
 
 
 class ApiController extends Controller
@@ -17,7 +26,7 @@ class ApiController extends Controller
 {
     public function __construct()
     {
-        $this->client = PayPalClient::client();
+        $this->client = KiwiPayPalClient::client();
     }
 
     public function createPaymentLink(Request $body)
@@ -136,6 +145,39 @@ class ApiController extends Controller
                     "meta" => $ex
                 )
             );
+            return $data;
+        }
+    }
+
+    public function createWebhook(Request $body)
+    {
+
+        try {
+            $request = new WebhookCreateRequest();
+            $request->body = $body->data;
+
+            $response = $this->client->execute($request);
+
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => sprintf("Webhook created with id %s", $response->result->id),
+                "data" => array(
+                    "webhook_id" => $response->result->id,
+                    "webhook_url" => $response->result->url,
+                    "meta" => $response
+                )
+            );
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => $ex
+            );
+
             return $data;
         }
     }
