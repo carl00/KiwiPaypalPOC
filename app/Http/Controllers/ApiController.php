@@ -72,6 +72,35 @@ class ProductsCreateRequest extends HttpRequest
     }
 }
 
+class SubscriptionsCreateRequest extends HttpRequest
+{
+    function __construct()
+    {
+        parent::__construct("/v1/billing/subscriptions", "POST");
+        $this->headers["Content-Type"] = "application/json";
+    }
+
+
+    public function payPalPartnerAttributionId($payPalPartnerAttributionId)
+    {
+        $this->headers["PayPal-Partner-Attribution-Id"] = $payPalPartnerAttributionId;
+    }
+    public function prefer($prefer)
+    {
+        $this->headers["Prefer"] = $prefer;
+    }
+}
+
+class SubscriptionsGetRequest extends HttpRequest
+{
+    function __construct($subscriptionId)
+    {
+        parent::__construct("/v1/billing/subscriptions/{subscription_id}", "GET");
+        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);  
+        $this->headers["Content-Type"] = "application/json";
+        echo $this->path;
+    }
+}
 
 class ApiController extends Controller
 
@@ -344,9 +373,9 @@ class ApiController extends Controller
             $data = array(
                 "errors" => false,
                 "success" => true,
-                "message" => sprintf("Your Plan is recieved"),
+                "message" => sprintf("Fetched Plan detail"),
                 "data" => array(
-                    "status" => $response,
+                    "status" => $response->result->status,
                     "meta" => $response
                 )
             );
@@ -462,4 +491,86 @@ class ApiController extends Controller
             return $data;
         }
     }
+
+    public function createSubscription(Request $body)
+    {
+        try {
+            //$plan = new Plan;
+
+            $request = new SubscriptionsCreateRequest();
+            $request->prefer('return=representation');
+            $request->body = $body->data;
+            
+            $response = $this->client->execute($request);
+
+            $subscriptionId = $response->result->id;
+            $status = $response->result->status;
+
+            //creaing a log for just created order
+            // $logs = new Logs;
+            // $logs->plan_id = $planId;
+            // $logs->status = $status;
+            // $logs->meta = json_encode($response);
+            // $logs->save();
+
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => $status,
+                "data" => array(
+                    "plan_id" => $subscriptionId,
+                    "meta" => $response
+                )
+            );
+
+            // $plan->id = $planId;
+            // $plan->status = $status;
+            // $plan->meta = json_encode($response);
+            // $plan->save();
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => $ex
+            );
+
+            return $data;
+        }
+    }
+
+    public function getSubscriptionDetailsById(Request $body)
+    {
+        if ($body->subscription_id) {
+            $subscriptionId = $body->subscription_id;
+        }
+        $request = new SubscriptionsGetRequest($subscriptionId);
+        try {
+            $response = $this->client->execute($request);
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => sprintf("Fetched Subscription details"),
+                "data" => array(
+                    "status" => $response->result->status,
+                    "meta" => $response
+                )
+            );
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => array(
+                    "meta" => $ex
+                )
+            );
+            return $data;
+        }
+    }
+
 }
