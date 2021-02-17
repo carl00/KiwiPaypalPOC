@@ -24,5 +24,8 @@ Route::post('v1/order', 'ApiController@getOrderById');
 Route::post('v1/order/history', 'ApiController@getOrderHistoryById');
 Route::post('v1/webhook', 'ApiController@createWebhook');
 Route::post('v1/listner', 'ApiController@webhookListener');
+Route::post('v1/plan/details', 'ApiController@getPlanDetailsById');
+Route::post('v1/plans', 'ApiController@createPlan');
+Route::post('v1/products', 'ApiController@createProduct');
 
     

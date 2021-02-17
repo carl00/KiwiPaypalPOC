@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Logs;
+use App\Models\Plan;
 use Exception;
 use Illuminate\Http\Request;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
 use PayPalCheckoutSdk\Orders\OrdersGetRequest;
 use PayPalHttp\HttpRequest;
-use kiwi\KiwiPayPalClient;
+use PPClient;
 
 
 class WebhookCreateRequest extends HttpRequest
@@ -22,13 +23,62 @@ class WebhookCreateRequest extends HttpRequest
     }
 }
 
+class PlansGetRequest extends HttpRequest
+{
+    function __construct($planId)
+    {
+        parent::__construct("/v1/billing/plans/{plan_id}", "GET");
+        $this->path = str_replace("{plan_id}", urlencode($planId), $this->path);  
+        $this->headers["Content-Type"] = "application/json";
+        echo $this->path;
+    }
+}
+
+class PlansCreateRequest extends HttpRequest
+{
+    function __construct()
+    {
+        parent::__construct("/v1/billing/plans", "POST");
+        $this->headers["Content-Type"] = "application/json";
+    }
+
+
+    public function payPalPartnerAttributionId($payPalPartnerAttributionId)
+    {
+        $this->headers["PayPal-Partner-Attribution-Id"] = $payPalPartnerAttributionId;
+    }
+    public function prefer($prefer)
+    {
+        $this->headers["Prefer"] = $prefer;
+    }
+}
+
+class ProductsCreateRequest extends HttpRequest
+{
+    function __construct()
+    {
+        parent::__construct("/v1/catalogs/products", "POST");
+        $this->headers["Content-Type"] = "application/json";
+    }
+
+
+    public function payPalPartnerAttributionId($payPalPartnerAttributionId)
+    {
+        $this->headers["PayPal-Partner-Attribution-Id"] = $payPalPartnerAttributionId;
+    }
+    public function prefer($prefer)
+    {
+        $this->headers["Prefer"] = $prefer;
+    }
+}
+
 
 class ApiController extends Controller
 
 {
     public function __construct()
     {
-        $this->client = KiwiPayPalClient::client();
+        $this->client = PPClient::client();
     }
 
     public function createPaymentLink(Request $body)
@@ -269,6 +319,136 @@ class ApiController extends Controller
                 "success" => true,
                 "message" => "successfully logged and updated",
             );
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => $ex
+            );
+
+            return $data;
+        }
+    }
+
+    public function getPlanDetailsById(Request $body)
+    {
+        if ($body->plan_id) {
+            $planId = $body->plan_id;
+        }
+        $request = new PlansGetRequest($planId);
+        try {
+            $response = $this->client->execute($request);
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => sprintf("Your Plan is recieved"),
+                "data" => array(
+                    "status" => $response,
+                    "meta" => $response
+                )
+            );
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => array(
+                    "meta" => $ex
+                )
+            );
+            return $data;
+        }
+    }
+
+    public function createPlan(Request $body)
+    {
+        try {
+            //$plan = new Plan;
+
+            $request = new PlansCreateRequest();
+            $request->prefer('return=representation');
+            $request->body = $body->data;
+            
+            $response = $this->client->execute($request);
+
+            $planId = $response->result->id;
+            $status = $response->result->status;
+
+            //creaing a log for just created order
+            // $logs = new Logs;
+            // $logs->plan_id = $planId;
+            // $logs->status = $status;
+            // $logs->meta = json_encode($response);
+            // $logs->save();
+
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => $status,
+                "data" => array(
+                    "plan_id" => $planId,
+                    "meta" => $response
+                )
+            );
+
+            // $plan->id = $planId;
+            // $plan->status = $status;
+            // $plan->meta = json_encode($response);
+            // $plan->save();
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => $ex
+            );
+
+            return $data;
+        }
+    }
+
+    public function createProduct(Request $body)
+    {
+        try {
+            //$plan = new Plan;
+
+            $request = new ProductsCreateRequest();
+            $request->prefer('return=representation');
+            $request->body = $body->data;
+            
+            $response = $this->client->execute($request);
+
+            $productId = $response->result->id;
+            $status = $response->statusCode;
+
+            //creaing a log for just created order
+            // $logs = new Logs;
+            // $logs->plan_id = $planId;
+            // $logs->status = $status;
+            // $logs->meta = json_encode($response);
+            // $logs->save();
+
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => $status,
+                "data" => array(
+                    "plan_id" => $productId,
+                    "meta" => $response
+                )
+            );
+
+            // $plan->id = $planId;
+            // $plan->status = $status;
+            // $plan->meta = json_encode($response);
+            // $plan->save();
 
             return $data;
         } catch (Exception $ex) {
