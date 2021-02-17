@@ -27,5 +27,7 @@ Route::post('v1/listner', 'ApiController@webhookListener');
 Route::post('v1/plan/details', 'ApiController@getPlanDetailsById');
 Route::post('v1/plans', 'ApiController@createPlan');
 Route::post('v1/products', 'ApiController@createProduct');
+Route::post('v1/subscriptions', 'ApiController@createSubscription');
+Route::post('v1/subscription/details', 'ApiController@getSubscriptionDetailsById');
 
     
