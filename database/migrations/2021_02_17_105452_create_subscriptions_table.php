@@ -15,6 +15,7 @@ class CreateSubscriptionsTable extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->string('id')->unique();
+            $table->string('plan_id');
             $table->string('start_time');
             $table->string('quantity');
             $table->json('subscriber');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Logs;
 use App\Models\Plan;
+use App\Models\Subscription;
 use Exception;
 use Illuminate\Http\Request;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
@@ -417,7 +418,7 @@ class ApiController extends Controller
     public function createPlan(Request $body)
     {
         try {
-            //$plan = new Plan;
+            $plan = new Plan;
 
             $request = new PlansCreateRequest();
             $request->prefer('return=representation');
@@ -429,11 +430,11 @@ class ApiController extends Controller
             $status = $response->result->status;
 
             //creaing a log for just created order
-            // $logs = new Logs;
-            // $logs->plan_id = $planId;
-            // $logs->status = $status;
-            // $logs->meta = json_encode($response);
-            // $logs->save();
+            $logs = new Logs;
+            $logs->plan_id = $planId;
+            $logs->status = $status;
+            $logs->meta = json_encode($response);
+            $logs->save();
 
             $data = array(
                 "errors" => false,
@@ -445,10 +446,13 @@ class ApiController extends Controller
                 )
             );
 
-            // $plan->id = $planId;
-            // $plan->status = $status;
-            // $plan->meta = json_encode($response);
-            // $plan->save();
+            $plan->id = $planId;
+            $plan->name =$response->result->name;
+            $plan->product_id =$response->result->product_id;
+            $plan->description =$response->result->description;
+            $plan->status = $status;
+            $plan->meta = json_encode($response);
+            $plan->save();
 
             return $data;
         } catch (Exception $ex) {
@@ -466,7 +470,7 @@ class ApiController extends Controller
     public function createProduct(Request $body)
     {
         try {
-            //$plan = new Plan;
+            //$product = new Product;
 
             $request = new ProductsCreateRequest();
             $request->prefer('return=representation');
@@ -479,7 +483,7 @@ class ApiController extends Controller
 
             //creaing a log for just created order
             // $logs = new Logs;
-            // $logs->plan_id = $planId;
+            // $logs->product_id = $productId;
             // $logs->status = $status;
             // $logs->meta = json_encode($response);
             // $logs->save();
@@ -494,10 +498,10 @@ class ApiController extends Controller
                 )
             );
 
-            // $plan->id = $planId;
-            // $plan->status = $status;
-            // $plan->meta = json_encode($response);
-            // $plan->save();
+            // $product->id = $productId;
+            // $product->status = $status;
+            // $product->meta = json_encode($response);
+            // $product->save();
 
             return $data;
         } catch (Exception $ex) {
@@ -515,7 +519,7 @@ class ApiController extends Controller
     public function createSubscription(Request $body)
     {
         try {
-            //$plan = new Plan;
+            $subscription = new Subscription;
 
             $request = new SubscriptionsCreateRequest();
             $request->prefer('return=representation');
@@ -527,11 +531,11 @@ class ApiController extends Controller
             $status = $response->result->status;
 
             //creaing a log for just created order
-            // $logs = new Logs;
-            // $logs->plan_id = $planId;
-            // $logs->status = $status;
-            // $logs->meta = json_encode($response);
-            // $logs->save();
+            $logs = new Logs;
+            $logs->subscription_id = $subscriptionId;
+            $logs->status = $status;
+            $logs->meta = json_encode($response);
+            $logs->save();
 
             $data = array(
                 "errors" => false,
@@ -543,10 +547,15 @@ class ApiController extends Controller
                 )
             );
 
-            // $plan->id = $planId;
-            // $plan->status = $status;
-            // $plan->meta = json_encode($response);
-            // $plan->save();
+            $subscription->id = $subscriptionId;
+            $subscription->plan_id = $response->result->plan_id;
+            $subscription->start_time = $response->result->start_time;
+            $subscription->quantity = $response->result->quantity;
+            $subscription->subscriber = $response->result->subscriber;
+            $subscription->create_time = $response->result->create_time;
+            $subscription->status = $status;
+            $subscription->meta = json_encode($response);
+            $subscription->save();
 
             return $data;
         } catch (Exception $ex) {
