@@ -31,7 +31,6 @@ class PlansGetRequest extends HttpRequest
         parent::__construct("/v1/billing/plans/{plan_id}", "GET");
         $this->path = str_replace("{plan_id}", urlencode($planId), $this->path);  
         $this->headers["Content-Type"] = "application/json";
-        echo $this->path;
     }
 }
 
@@ -551,7 +550,7 @@ class ApiController extends Controller
             $subscription->plan_id = $response->result->plan_id;
             $subscription->start_time = $response->result->start_time;
             $subscription->quantity = $response->result->quantity;
-            $subscription->subscriber = $response->result->subscriber;
+            $subscription->subscriber = json_encode($response->result->subscriber);
             $subscription->create_time = $response->result->create_time;
             $subscription->status = $status;
             $subscription->meta = json_encode($response);
