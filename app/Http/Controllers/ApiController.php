@@ -29,7 +29,7 @@ class PlansGetRequest extends HttpRequest
     function __construct($planId)
     {
         parent::__construct("/v1/billing/plans/{plan_id}", "GET");
-        $this->path = str_replace("{plan_id}", urlencode($planId), $this->path);  
+        $this->path = str_replace("{plan_id}", urlencode($planId), $this->path);
         $this->headers["Content-Type"] = "application/json";
     }
 }
@@ -96,7 +96,7 @@ class SubscriptionsGetRequest extends HttpRequest
     function __construct($subscriptionId)
     {
         parent::__construct("/v1/billing/subscriptions/{subscription_id}", "GET");
-        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);  
+        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);
         $this->headers["Content-Type"] = "application/json";
     }
 }
@@ -106,7 +106,7 @@ class SubscriptionsCancelRequest extends HttpRequest
     function __construct($subscriptionId)
     {
         parent::__construct("/v1/billing/subscriptions/{subscription_id}/cancel", "POST");
-        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);  
+        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);
         $this->headers["Content-Type"] = "application/json";
     }
 }
@@ -116,7 +116,7 @@ class SubscriptionsUpdateRequest extends HttpRequest
     function __construct($subscriptionId)
     {
         parent::__construct("/v1/billing/subscriptions/{subscription_id}", "PATCH");
-        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);  
+        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);
         $this->headers["Content-Type"] = "application/json";
     }
 }
@@ -345,7 +345,7 @@ class ApiController extends Controller
         }
     }
 
-    public function webhookListener(Request $request)
+    public function webhookOrderListener(Request $request)
     {
         try {
 
@@ -366,7 +366,7 @@ class ApiController extends Controller
             $data = array(
                 "errors" => false,
                 "success" => true,
-                "message" => "successfully logged and updated",
+                "message" => "successfully logged and updated Orders",
             );
 
             return $data;
@@ -422,7 +422,7 @@ class ApiController extends Controller
             $request = new PlansCreateRequest();
             $request->prefer('return=representation');
             $request->body = $body->data;
-            
+
             $response = $this->client->execute($request);
 
             $planId = $response->result->id;
@@ -446,9 +446,9 @@ class ApiController extends Controller
             );
 
             $plan->id = $planId;
-            $plan->name =$response->result->name;
-            $plan->product_id =$response->result->product_id;
-            $plan->description =$response->result->description;
+            $plan->name = $response->result->name;
+            $plan->product_id = $response->result->product_id;
+            $plan->description = $response->result->description;
             $plan->status = $status;
             $plan->meta = json_encode($response);
             $plan->save();
@@ -474,7 +474,7 @@ class ApiController extends Controller
             $request = new ProductsCreateRequest();
             $request->prefer('return=representation');
             $request->body = $body->data;
-            
+
             $response = $this->client->execute($request);
 
             $productId = $response->result->id;
@@ -523,7 +523,7 @@ class ApiController extends Controller
             $request = new SubscriptionsCreateRequest();
             $request->prefer('return=representation');
             $request->body = $body->data;
-            
+
             $response = $this->client->execute($request);
 
             $subscriptionId = $response->result->id;
@@ -604,12 +604,12 @@ class ApiController extends Controller
     public function cancelSubscriptionById(Request $body)
     {
         try {
-        if ($body->subscription_id) {
-            $subscriptionId = $body->subscription_id;
-        }
-        $request = new SubscriptionsCancelRequest($subscriptionId);
-        $request->body = $body->data;
-        
+            if ($body->subscription_id) {
+                $subscriptionId = $body->subscription_id;
+            }
+            $request = new SubscriptionsCancelRequest($subscriptionId);
+            $request->body = $body->data;
+
             $response = $this->client->execute($request);
             echo $response;
             $data = array(
@@ -639,12 +639,12 @@ class ApiController extends Controller
     public function updateSubscriptionById(Request $body)
     {
         try {
-        if ($body->subscription_id) {
-            $subscriptionId = $body->subscription_id;
-        }
-        $request = new SubscriptionsUpdateRequest($subscriptionId);
-        $request->body = $body->data;
-        
+            if ($body->subscription_id) {
+                $subscriptionId = $body->subscription_id;
+            }
+            $request = new SubscriptionsUpdateRequest($subscriptionId);
+            $request->body = $body->data;
+
             $response = $this->client->execute($request);
             echo $response;
             $data = array(
@@ -671,4 +671,40 @@ class ApiController extends Controller
         }
     }
 
+    public function webhookSubscriptionListener(Request $request)
+    {
+        try {
+
+            $data = $request->body;
+            $subscriptionId = $data["resource"]["id"];
+            $status = $data["resource"]["status"];
+
+            $logs = new Logs;
+            $logs->subscription_id = $subscriptionId;
+            $logs->status = $status;
+            $logs->meta = json_encode($data);
+            $logs->save();
+
+            if (Subscription::where('id', $subscriptionId)->exists()) {
+                Subscription::where('id', $subscriptionId)->update(['status' => $status]);
+            }
+
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => "successfully logged and updated Subscription",
+            );
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => $ex
+            );
+
+            return $data;
+        }
+    }
 }
