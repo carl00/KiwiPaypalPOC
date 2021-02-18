@@ -34,6 +34,15 @@ class PlansGetRequest extends HttpRequest
     }
 }
 
+class GetAllPlansRequest extends HttpRequest
+{
+    function __construct()
+    {
+        parent::__construct("/v1/billing/plans", "GET");
+        $this->headers["Content-Type"] = "application/json";
+    }
+}
+
 class PlansCreateRequest extends HttpRequest
 {
     function __construct()
@@ -120,6 +129,17 @@ class SubscriptionsUpdateRequest extends HttpRequest
         $this->headers["Content-Type"] = "application/json";
     }
 }
+
+class SubscriptionsActivateRequest extends HttpRequest
+{
+    function __construct($subscriptionId)
+    {
+        parent::__construct("/v1/billing/subscriptions/{subscription_id}/activate", "POST");
+        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);
+        $this->headers["Content-Type"] = "application/json";
+    }
+}
+
 
 
 class ApiController extends Controller
@@ -414,6 +434,36 @@ class ApiController extends Controller
         }
     }
 
+    public function getAllPlans(Request $body)
+    {
+
+        $request = new GetAllPlansRequest();
+        try {
+            $response = $this->client->execute($request);
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => sprintf("Fetched All Plans"),
+                "data" => array(
+                    "status" => $response,
+                    "meta" => $response
+                )
+            );
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => array(
+                    "meta" => $ex
+                )
+            );
+            return $data;
+        }
+    }
+
     public function createPlan(Request $body)
     {
         try {
@@ -611,7 +661,6 @@ class ApiController extends Controller
             $request->body = $body->data;
 
             $response = $this->client->execute($request);
-            echo $response;
             $data = array(
                 "errors" => false,
                 "success" => true,
@@ -636,6 +685,41 @@ class ApiController extends Controller
         }
     }
 
+    public function activateSubscriptionById(Request $body)
+    {
+        try {
+            if ($body->subscription_id) {
+                $subscriptionId = $body->subscription_id;
+            }
+            $request = new SubscriptionsActivateRequest($subscriptionId);
+            $request->body = $body->data;
+
+            $response = $this->client->execute($request);
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => sprintf("Subscription Activated Successfully"),
+                "data" => array(
+                    "status" => $response,
+                    "meta" => $response
+                )
+            );
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => array(
+                    "meta" => $ex
+                )
+            );
+            return $data;
+        }
+    }
+
+
     public function updateSubscriptionById(Request $body)
     {
         try {
@@ -646,7 +730,6 @@ class ApiController extends Controller
             $request->body = $body->data;
 
             $response = $this->client->execute($request);
-            echo $response;
             $data = array(
                 "errors" => false,
                 "success" => true,

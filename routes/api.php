@@ -27,10 +27,12 @@ Route::post('v1/listner/orders', 'ApiController@webhookOrderListener');
 Route::post('v1/listner/subscriptions', 'ApiController@webhookSubscriptionListener');
 Route::post('v1/plan/details', 'ApiController@getPlanDetailsById');
 Route::post('v1/plans', 'ApiController@createPlan');
+Route::get('v1/plans', 'ApiController@getAllPlans');
 Route::post('v1/products', 'ApiController@createProduct');
 Route::post('v1/subscriptions', 'ApiController@createSubscription');
 Route::post('v1/subscription/details', 'ApiController@getSubscriptionDetailsById');
 Route::post('v1/subscription/cancel', 'ApiController@cancelSubscriptionById');
+Route::post('v1/subscription/activate', 'ApiController@activateSubscriptionById');
 Route::post('v1/subscription/update', 'ApiController@updateSubscriptionById');
 
     
