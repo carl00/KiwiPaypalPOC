@@ -642,7 +642,7 @@ class ApiController extends Controller
             $data = array(
                 "errors" => false,
                 "success" => true,
-                "message" => sprintf("Subscription Cancelled Successfully"),
+                "message" => sprintf("Subscription Updated Successfully"),
                 "data" => array(
                     "status" => $response,
                     "meta" => $response
