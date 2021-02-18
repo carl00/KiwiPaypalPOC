@@ -29,5 +29,7 @@ Route::post('v1/plans', 'ApiController@createPlan');
 Route::post('v1/products', 'ApiController@createProduct');
 Route::post('v1/subscriptions', 'ApiController@createSubscription');
 Route::post('v1/subscription/details', 'ApiController@getSubscriptionDetailsById');
+Route::post('v1/subscription/cancel', 'ApiController@cancelSubscriptionById');
+Route::post('v1/subscription/update', 'ApiController@updateSubscriptionById');
 
     

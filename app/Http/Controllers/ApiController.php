@@ -98,9 +98,29 @@ class SubscriptionsGetRequest extends HttpRequest
         parent::__construct("/v1/billing/subscriptions/{subscription_id}", "GET");
         $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);  
         $this->headers["Content-Type"] = "application/json";
-        echo $this->path;
     }
 }
+
+class SubscriptionsCancelRequest extends HttpRequest
+{
+    function __construct($subscriptionId)
+    {
+        parent::__construct("/v1/billing/subscriptions/{subscription_id}/cancel", "POST");
+        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);  
+        $this->headers["Content-Type"] = "application/json";
+    }
+}
+
+class SubscriptionsUpdateRequest extends HttpRequest
+{
+    function __construct($subscriptionId)
+    {
+        parent::__construct("/v1/billing/subscriptions/{subscription_id}", "PATCH");
+        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);  
+        $this->headers["Content-Type"] = "application/json";
+    }
+}
+
 
 class ApiController extends Controller
 
@@ -469,7 +489,7 @@ class ApiController extends Controller
                 "success" => true,
                 "message" => $status,
                 "data" => array(
-                    "plan_id" => $productId,
+                    "product_id" => $productId,
                     "meta" => $response
                 )
             );
@@ -518,7 +538,7 @@ class ApiController extends Controller
                 "success" => true,
                 "message" => $status,
                 "data" => array(
-                    "plan_id" => $subscriptionId,
+                    "subscription_id" => $subscriptionId,
                     "meta" => $response
                 )
             );
@@ -555,6 +575,76 @@ class ApiController extends Controller
                 "message" => sprintf("Fetched Subscription details"),
                 "data" => array(
                     "status" => $response->result->status,
+                    "meta" => $response
+                )
+            );
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => array(
+                    "meta" => $ex
+                )
+            );
+            return $data;
+        }
+    }
+
+    public function cancelSubscriptionById(Request $body)
+    {
+        try {
+        if ($body->subscription_id) {
+            $subscriptionId = $body->subscription_id;
+        }
+        $request = new SubscriptionsCancelRequest($subscriptionId);
+        $request->body = $body->data;
+        
+            $response = $this->client->execute($request);
+            echo $response;
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => sprintf("Subscription Cancelled Successfully"),
+                "data" => array(
+                    "status" => $response,
+                    "meta" => $response
+                )
+            );
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => array(
+                    "meta" => $ex
+                )
+            );
+            return $data;
+        }
+    }
+
+    public function updateSubscriptionById(Request $body)
+    {
+        try {
+        if ($body->subscription_id) {
+            $subscriptionId = $body->subscription_id;
+        }
+        $request = new SubscriptionsUpdateRequest($subscriptionId);
+        $request->body = $body->data;
+        
+            $response = $this->client->execute($request);
+            echo $response;
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => sprintf("Subscription Cancelled Successfully"),
+                "data" => array(
+                    "status" => $response,
                     "meta" => $response
                 )
             );
