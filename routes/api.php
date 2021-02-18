@@ -34,5 +34,3 @@ Route::post('v1/subscription/details', 'ApiController@getSubscriptionDetailsById
 Route::post('v1/subscription/cancel', 'ApiController@cancelSubscriptionById');
 Route::post('v1/subscription/activate', 'ApiController@activateSubscriptionById');
 Route::post('v1/subscription/update', 'ApiController@updateSubscriptionById');
-
-    
