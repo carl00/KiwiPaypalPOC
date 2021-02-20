@@ -1649,7 +1649,195 @@ response body :{
 }
 ```
 
-# 9. Listener Api for subscription
+# 8. Revise Subscription by id
+
+description: Revise Subscription plan or quantity by passing subscription id and revise object array.
+
+for more details on revising a [subscription](https://developer.paypal.com/docs/api/subscriptions/v1/#subscriptions_revise).
+
+path:
+{{base_url}}/{{api_prefix}}/subscription/revise
+
+request body :
+
+```json
+{
+    "subscription_id":"I-GDY12CCPFA0M",
+    "data":{
+  "plan_id": "P-320076624P506394NMAYKF4A",
+  "shipping_amount": {
+    "currency_code": "USD",
+    "value": "10.00"
+  },
+  "shipping_address": {
+    "name": {
+      "full_name": "John Doe"
+    },
+    "address": {
+      "address_line_1": "2211 N First Street",
+      "address_line_2": "Building 17",
+      "admin_area_2": "San Jose",
+      "admin_area_1": "CA",
+      "postal_code": "95131",
+      "country_code": "US"
+    }
+  },
+  "application_context": {
+    "brand_name": "walmart",
+    "locale": "en-US",
+    "shipping_preference": "SET_PROVIDED_ADDRESS",
+    "payment_method": {
+      "payer_selected": "PAYPAL",
+      "payee_preferred": "IMMEDIATE_PAYMENT_REQUIRED"
+    },
+    "return_url": "https://example.com/returnUrl",
+    "cancel_url": "https://example.com/cancelUrl"
+  }
+}
+}
+```
+
+response body:
+```json
+{
+    "errors": false,
+    "success": true,
+    "message": "Subscription Revised Successfully",
+    "data": {
+        "status": {
+            "statusCode": 200,
+            "result": {
+                "plan_id": "P-320076624P506394NMAYKF4A",
+                "shipping_amount": {
+                    "currency_code": "USD",
+                    "value": "10.0"
+                },
+                "shipping_address": {
+                    "name": {
+                        "full_name": "John Doe"
+                    },
+                    "address": {
+                        "address_line_1": "2211 N First Street",
+                        "address_line_2": "Building 17",
+                        "admin_area_2": "San Jose",
+                        "admin_area_1": "CA",
+                        "postal_code": "95131",
+                        "country_code": "US"
+                    }
+                },
+                "plan_overridden": false,
+                "links": [
+                    {
+                        "href": "https://www.sandbox.paypal.com/webapps/billing/subscriptions/update?ba_token=BA-58S2330534168824C",
+                        "rel": "approve",
+                        "method": "GET"
+                    },
+                    {
+                        "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-GDY12CCPFA0M",
+                        "rel": "edit",
+                        "method": "PATCH"
+                    },
+                    {
+                        "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-GDY12CCPFA0M",
+                        "rel": "self",
+                        "method": "GET"
+                    },
+                    {
+                        "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-GDY12CCPFA0M/cancel",
+                        "rel": "cancel",
+                        "method": "POST"
+                    },
+                    {
+                        "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-GDY12CCPFA0M/suspend",
+                        "rel": "suspend",
+                        "method": "POST"
+                    },
+                    {
+                        "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-GDY12CCPFA0M/capture",
+                        "rel": "capture",
+                        "method": "POST"
+                    }
+                ]
+            },
+            "headers": {
+                "": "",
+                "Cache-Control": "max-age=0, no-cache, no-store, must-revalidate",
+                "Content-Length": "1080",
+                "Content-Type": "application/json",
+                "Date": "Sat, 20 Feb 2021 07",
+                "Paypal-Debug-Id": "68a092843cc38"
+            }
+        },
+        "meta": {
+            "statusCode": 200,
+            "result": {
+                "plan_id": "P-320076624P506394NMAYKF4A",
+                "shipping_amount": {
+                    "currency_code": "USD",
+                    "value": "10.0"
+                },
+                "shipping_address": {
+                    "name": {
+                        "full_name": "John Doe"
+                    },
+                    "address": {
+                        "address_line_1": "2211 N First Street",
+                        "address_line_2": "Building 17",
+                        "admin_area_2": "San Jose",
+                        "admin_area_1": "CA",
+                        "postal_code": "95131",
+                        "country_code": "US"
+                    }
+                },
+                "plan_overridden": false,
+                "links": [
+                    {
+                        "href": "https://www.sandbox.paypal.com/webapps/billing/subscriptions/update?ba_token=BA-58S2330534168824C",
+                        "rel": "approve",
+                        "method": "GET"
+                    },
+                    {
+                        "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-GDY12CCPFA0M",
+                        "rel": "edit",
+                        "method": "PATCH"
+                    },
+                    {
+                        "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-GDY12CCPFA0M",
+                        "rel": "self",
+                        "method": "GET"
+                    },
+                    {
+                        "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-GDY12CCPFA0M/cancel",
+                        "rel": "cancel",
+                        "method": "POST"
+                    },
+                    {
+                        "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-GDY12CCPFA0M/suspend",
+                        "rel": "suspend",
+                        "method": "POST"
+                    },
+                    {
+                        "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-GDY12CCPFA0M/capture",
+                        "rel": "capture",
+                        "method": "POST"
+                    }
+                ]
+            },
+            "headers": {
+                "": "",
+                "Cache-Control": "max-age=0, no-cache, no-store, must-revalidate",
+                "Content-Length": "1080",
+                "Content-Type": "application/json",
+                "Date": "Sat, 20 Feb 2021 07",
+                "Paypal-Debug-Id": "68a092843cc38"
+            }
+        }
+    }
+}
+```
+
+
+# 10. Listener Api for subscription
 
 Description : This is a listner api, which listens for event triggers for subsription, as soon as any of these event triggers:
 

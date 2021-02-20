@@ -140,6 +140,16 @@ class SubscriptionsActivateRequest extends HttpRequest
     }
 }
 
+class SubscriptionsReviseRequest extends HttpRequest
+{
+    function __construct($subscriptionId)
+    {
+        parent::__construct("/v1/billing/subscriptions/{subscription_id}/revise", "POST");
+        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);
+        $this->headers["Content-Type"] = "application/json";
+    }
+}
+
 
 class ApiController extends Controller
 
@@ -698,6 +708,40 @@ class ApiController extends Controller
                 "errors" => false,
                 "success" => true,
                 "message" => sprintf("Subscription Activated Successfully"),
+                "data" => array(
+                    "status" => $response,
+                    "meta" => $response
+                )
+            );
+
+            return $data;
+        } catch (Exception $ex) {
+            $data = array(
+                "errors" => true,
+                "success" => false,
+                "message" => $ex->getMessage(),
+                "data" => array(
+                    "meta" => $ex
+                )
+            );
+            return $data;
+        }
+    }
+
+    public function reviseSubscriptionById(Request $body)
+    {
+        try {
+            if ($body->subscription_id) {
+                $subscriptionId = $body->subscription_id;
+            }
+            $request = new SubscriptionsReviseRequest($subscriptionId);
+            $request->body = $body->data;
+
+            $response = $this->client->execute($request);
+            $data = array(
+                "errors" => false,
+                "success" => true,
+                "message" => sprintf("Subscription Revised Successfully"),
                 "data" => array(
                     "status" => $response,
                     "meta" => $response
