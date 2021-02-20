@@ -1662,42 +1662,43 @@ request body :
 
 ```json
 {
-    "subscription_id":"I-GDY12CCPFA0M",
-    "data":{
-  "plan_id": "P-320076624P506394NMAYKF4A",
-  "shipping_amount": {
-    "currency_code": "USD",
-    "value": "10.00"
-  },
-  "shipping_address": {
-    "name": {
-      "full_name": "John Doe"
-    },
-    "address": {
-      "address_line_1": "2211 N First Street",
-      "address_line_2": "Building 17",
-      "admin_area_2": "San Jose",
-      "admin_area_1": "CA",
-      "postal_code": "95131",
-      "country_code": "US"
+    "subscription_id": "I-GDY12CCPFA0M",
+    "data": {
+        "plan_id": "P-320076624P506394NMAYKF4A",
+        "shipping_amount": {
+            "currency_code": "USD",
+            "value": "10.00"
+        },
+        "shipping_address": {
+            "name": {
+                "full_name": "John Doe"
+            },
+            "address": {
+                "address_line_1": "2211 N First Street",
+                "address_line_2": "Building 17",
+                "admin_area_2": "San Jose",
+                "admin_area_1": "CA",
+                "postal_code": "95131",
+                "country_code": "US"
+            }
+        },
+        "application_context": {
+            "brand_name": "walmart",
+            "locale": "en-US",
+            "shipping_preference": "SET_PROVIDED_ADDRESS",
+            "payment_method": {
+                "payer_selected": "PAYPAL",
+                "payee_preferred": "IMMEDIATE_PAYMENT_REQUIRED"
+            },
+            "return_url": "https://example.com/returnUrl",
+            "cancel_url": "https://example.com/cancelUrl"
+        }
     }
-  },
-  "application_context": {
-    "brand_name": "walmart",
-    "locale": "en-US",
-    "shipping_preference": "SET_PROVIDED_ADDRESS",
-    "payment_method": {
-      "payer_selected": "PAYPAL",
-      "payee_preferred": "IMMEDIATE_PAYMENT_REQUIRED"
-    },
-    "return_url": "https://example.com/returnUrl",
-    "cancel_url": "https://example.com/cancelUrl"
-  }
-}
 }
 ```
 
 response body:
+
 ```json
 {
     "errors": false,
@@ -1835,7 +1836,6 @@ response body:
     }
 }
 ```
-
 
 # 10. Listener Api for subscription
 
