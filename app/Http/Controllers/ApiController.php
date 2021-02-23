@@ -186,6 +186,7 @@ class ApiController extends Controller
     public function __construct()
     {
         $this->client = PPClient::client();
+        $this->out = new \Symfony\Component\Console\Output\ConsoleOutput();
     }
 
     public function createPaymentLink(Request $body)
@@ -201,7 +202,6 @@ class ApiController extends Controller
                 $order->minutes = $body->conversion["minutes"];
                 $order->amount = $amount;
             }
-
             $request = new OrdersCreateRequest();
             $request->prefer('return=representation');
             $request->body = [
@@ -225,7 +225,7 @@ class ApiController extends Controller
 
             $orderId = $response->result->id;
             $status = $response->result->status;
-
+            $this->out->writeln('payment link');
             //creaing a log for just created order
             $logs = new Logs;
             $logs->order_id = $orderId;
@@ -406,15 +406,15 @@ class ApiController extends Controller
     public function webhookOrderListener(Request $request)
     {
         try {
-
-            $data = $request->body;
-            $orderId = $data["resource"]["id"];
-            $status = $data["resource"]["status"];
-
+            $this->out->writeln('Calling listener order webhook.');
+            $json = file_get_contents('php://input');
+            $action = json_decode($json, true);
+            $orderId = $action["resource"]["id"];
+            $status = $action["resource"]["status"];
             $logs = new Logs;
             $logs->order_id = $orderId;
             $logs->status = $status;
-            $logs->meta = json_encode($data);
+            $logs->meta = json_encode($action);
             $logs->save();
 
             if (Order::where('id', $orderId)->exists()) {
@@ -429,6 +429,7 @@ class ApiController extends Controller
 
             return $data;
         } catch (Exception $ex) {
+            $this->out->writeln('Error Calling listener order webhook.');
             $data = array(
                 "errors" => true,
                 "success" => false,
@@ -830,14 +831,16 @@ class ApiController extends Controller
     {
         try {
 
-            $data = $request->body;
-            $subscriptionId = $data["resource"]["id"];
-            $status = $data["resource"]["status"];
+            $this->out->writeln('Calling listener subscriptions webhook.');
+            $json = file_get_contents('php://input');
+            $action = json_decode($json, true);
+            $subscriptionId = $action["resource"]["id"];
+            $status = $action["resource"]["status"];
 
             $logs = new Logs;
             $logs->subscription_id = $subscriptionId;
             $logs->status = $status;
-            $logs->meta = json_encode($data);
+            $logs->meta = json_encode($action);
             $logs->save();
 
             if (Subscription::where('id', $subscriptionId)->exists()) {
@@ -852,6 +855,7 @@ class ApiController extends Controller
 
             return $data;
         } catch (Exception $ex) {
+            $this->out->writeln('Error Calling listener subscriptions webhook.');
             $data = array(
                 "errors" => true,
                 "success" => false,
