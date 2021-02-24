@@ -6,136 +6,18 @@ use App\Models\Logs;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\PPClient;
+use App\Subscription\GetAllPlansRequest;
+use App\Subscription\PlansCreateRequest;
+use App\Subscription\PlansGetRequest;
+use App\Subscription\ProductsCreateRequest;
+use App\Subscription\SubscriptionsActivateRequest;
+use App\Subscription\SubscriptionsCancelRequest;
+use App\Subscription\SubscriptionsCreateRequest;
+use App\Subscription\SubscriptionsGetRequest;
+use App\Subscription\SubscriptionsReviseRequest;
+use App\Subscription\SubscriptionsUpdateRequest;
 use Exception;
 use Illuminate\Http\Request;
-
-use PayPalHttp\HttpRequest;
-
-class PlansGetRequest extends HttpRequest
-{
-    function __construct($planId)
-    {
-        parent::__construct("/v1/billing/plans/{plan_id}", "GET");
-        $this->path = str_replace("{plan_id}", urlencode($planId), $this->path);
-        $this->headers["Content-Type"] = "application/json";
-    }
-}
-
-class GetAllPlansRequest extends HttpRequest
-{
-    function __construct()
-    {
-        parent::__construct("/v1/billing/plans", "GET");
-        $this->headers["Content-Type"] = "application/json";
-    }
-}
-
-class PlansCreateRequest extends HttpRequest
-{
-    function __construct()
-    {
-        parent::__construct("/v1/billing/plans", "POST");
-        $this->headers["Content-Type"] = "application/json";
-    }
-
-
-    public function payPalPartnerAttributionId($payPalPartnerAttributionId)
-    {
-        $this->headers["PayPal-Partner-Attribution-Id"] = $payPalPartnerAttributionId;
-    }
-    public function prefer($prefer)
-    {
-        $this->headers["Prefer"] = $prefer;
-    }
-}
-
-class ProductsCreateRequest extends HttpRequest
-{
-    function __construct()
-    {
-        parent::__construct("/v1/catalogs/products", "POST");
-        $this->headers["Content-Type"] = "application/json";
-    }
-
-
-    public function payPalPartnerAttributionId($payPalPartnerAttributionId)
-    {
-        $this->headers["PayPal-Partner-Attribution-Id"] = $payPalPartnerAttributionId;
-    }
-    public function prefer($prefer)
-    {
-        $this->headers["Prefer"] = $prefer;
-    }
-}
-
-class SubscriptionsCreateRequest extends HttpRequest
-{
-    function __construct()
-    {
-        parent::__construct("/v1/billing/subscriptions", "POST");
-        $this->headers["Content-Type"] = "application/json";
-    }
-
-
-    public function payPalPartnerAttributionId($payPalPartnerAttributionId)
-    {
-        $this->headers["PayPal-Partner-Attribution-Id"] = $payPalPartnerAttributionId;
-    }
-    public function prefer($prefer)
-    {
-        $this->headers["Prefer"] = $prefer;
-    }
-}
-
-class SubscriptionsGetRequest extends HttpRequest
-{
-    function __construct($subscriptionId)
-    {
-        parent::__construct("/v1/billing/subscriptions/{subscription_id}", "GET");
-        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);
-        $this->headers["Content-Type"] = "application/json";
-    }
-}
-
-class SubscriptionsCancelRequest extends HttpRequest
-{
-    function __construct($subscriptionId)
-    {
-        parent::__construct("/v1/billing/subscriptions/{subscription_id}/cancel", "POST");
-        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);
-        $this->headers["Content-Type"] = "application/json";
-    }
-}
-
-class SubscriptionsUpdateRequest extends HttpRequest
-{
-    function __construct($subscriptionId)
-    {
-        parent::__construct("/v1/billing/subscriptions/{subscription_id}", "PATCH");
-        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);
-        $this->headers["Content-Type"] = "application/json";
-    }
-}
-
-class SubscriptionsActivateRequest extends HttpRequest
-{
-    function __construct($subscriptionId)
-    {
-        parent::__construct("/v1/billing/subscriptions/{subscription_id}/activate", "POST");
-        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);
-        $this->headers["Content-Type"] = "application/json";
-    }
-}
-
-class SubscriptionsReviseRequest extends HttpRequest
-{
-    function __construct($subscriptionId)
-    {
-        parent::__construct("/v1/billing/subscriptions/{subscription_id}/revise", "POST");
-        $this->path = str_replace("{subscription_id}", urlencode($subscriptionId), $this->path);
-        $this->headers["Content-Type"] = "application/json";
-    }
-}
 
 class ApiSubscriptionController extends Controller
 
@@ -143,7 +25,6 @@ class ApiSubscriptionController extends Controller
     public function __construct()
     {
         $this->client = PPClient::client();
-        $this->out = new \Symfony\Component\Console\Output\ConsoleOutput();
     }
 
 
@@ -215,7 +96,7 @@ class ApiSubscriptionController extends Controller
             $plan = new Plan;
 
             $request = new PlansCreateRequest();
-            $request->prefer('return=representation');
+            $request->prefer(env("PREFER","return=representation"));
             $request->body = $body->data;
 
             $response = $this->client->execute($request);
@@ -267,7 +148,7 @@ class ApiSubscriptionController extends Controller
             //$product = new Product;
 
             $request = new ProductsCreateRequest();
-            $request->prefer('return=representation');
+            $request->prefer(env("PREFER","return=representation"));
             $request->body = $body->data;
 
             $response = $this->client->execute($request);
@@ -316,7 +197,7 @@ class ApiSubscriptionController extends Controller
             $subscription = new Subscription;
 
             $request = new SubscriptionsCreateRequest();
-            $request->prefer('return=representation');
+            $request->prefer(env("PREFER","return=representation"));
             $request->body = $body->data;
 
             $response = $this->client->execute($request);
@@ -537,7 +418,6 @@ class ApiSubscriptionController extends Controller
     {
         try {
 
-            $this->out->writeln('Calling listener subscriptions webhook.');
             $json = file_get_contents('php://input');
             $action = json_decode($json, true);
 
@@ -590,7 +470,7 @@ class ApiSubscriptionController extends Controller
 
             return $data;
         } catch (Exception $ex) {
-            $this->out->writeln('Error Calling listener subscriptions webhook.');
+
             $data = array(
                 "errors" => true,
                 "success" => false,

@@ -31,4 +31,5 @@ class PPClient
         $clientSecret = getenv("PAYPAL_CLIENT_SECRET") ?: "EL3Q7vbzFc1hbBp7IyMIEaw30T1itMI417O5PdLlOAs2EGDBr6wG2d9ZhUhw55SVvUQP6lfYqoChg9E3";
         return new SandboxEnvironment($clientId, $clientSecret);
     }
+
 }

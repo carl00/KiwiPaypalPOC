@@ -19,7 +19,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::post('v1/payment', 'ApiOrderController@createPaymentLink');
-Route::post('v1/status', 'ApiOrderController@getOrderStatusById');
 Route::post('v1/order', 'ApiOrderController@getOrderById');
 Route::post('v1/order/history', 'ApiOrderController@getOrderHistoryById');
 Route::post('v1/webhook', 'ApiOrderController@createWebhook');

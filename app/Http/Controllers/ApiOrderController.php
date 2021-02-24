@@ -5,22 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Logs;
 use App\PPClient;
+use App\WebhookCreateRequest;
 use Exception;
 use Illuminate\Http\Request;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
-use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
 use PayPalCheckoutSdk\Orders\OrdersGetRequest;
-use PayPalHttp\HttpRequest;
-
-
-class WebhookCreateRequest extends HttpRequest
-{
-    function __construct()
-    {
-        parent::__construct("/v1/notifications/webhooks", "POST");
-        $this->headers["Content-Type"] = "application/json";
-    }
-}
 
 
 class ApiOrderController extends Controller
@@ -29,7 +18,6 @@ class ApiOrderController extends Controller
     public function __construct()
     {
         $this->client = PPClient::client();
-        $this->out = new \Symfony\Component\Console\Output\ConsoleOutput();
     }
 
     public function createPaymentLink(Request $body)
@@ -45,8 +33,9 @@ class ApiOrderController extends Controller
                 $order->minutes = $body->conversion["minutes"];
                 $order->amount = $amount;
             }
+            
             $request = new OrdersCreateRequest();
-            $request->prefer('return=representation');
+            $request->prefer(env("PREFER","return=representation"));
             $request->body = [
                 "intent" => "CAPTURE",
                 "purchase_units" => [[
@@ -68,7 +57,6 @@ class ApiOrderController extends Controller
 
             $orderId = $response->result->id;
             $status = $response->result->status;
-            $this->out->writeln('payment link');
             //creaing a log for just created order
             $logs = new Logs;
             $logs->order_id = $orderId;
@@ -180,44 +168,11 @@ class ApiOrderController extends Controller
         }
     }
 
-    public function getOrderStatusById(Request $body)
-    {
-        if ($body->order_id) {
-            $orderId = $body->order_id;
-        }
-        $request = new OrdersCaptureRequest($orderId);
-        $request->prefer('return=representation');
-        try {
-            $response = $this->client->execute($request);
-            $data = array(
-                "errors" => false,
-                "success" => true,
-                "message" => sprintf("Your Order Status is %s", $response->result->status),
-                "data" => array(
-                    "status" => $response->result->status,
-                    "meta" => $response
-                )
-            );
-
-            return $data;
-        } catch (Exception $ex) {
-            $data = array(
-                "errors" => true,
-                "success" => false,
-                "message" => $ex->getMessage(),
-                "data" => array(
-                    "meta" => $ex
-                )
-            );
-            return $data;
-        }
-    }
-
     public function createWebhook(Request $body)
     {
 
         try {
-            $request = new WebhookCreateRequest();
+            $request =  new WebhookCreateRequest();
             $request->body = $body->data;
 
             $response = $this->client->execute($request);
@@ -249,12 +204,18 @@ class ApiOrderController extends Controller
     public function webhookOrderListener(Request $request)
     {
         try {
-            $this->out->writeln('Calling listener order webhook.');
             $json = file_get_contents('php://input');
             $action = json_decode($json, true);
-            $orderId = $action["resource"]["id"];
-            $status = $action["resource"]["status"];
-            $summary = $action["summary"];
+
+            if($action["resource_type"]==="capture"){
+                $link = $action["resource"]["links"][3]->href;
+                $id = sprintf("%s",explode("/",parse_url($link,PHP_URL_PATH))[4]); 
+                $orderId = $id ?: "-1";
+            }else{
+                $orderId = $action["resource"]["id"]?: "-1";
+            }
+            $status = $action["resource"]["status"] ?: "invalid status";
+            $summary = $action["summary"] ?: "invalid summary";
             $logs = new Logs;
             $logs->order_id = $orderId;
             $logs->status = $status;
@@ -271,10 +232,8 @@ class ApiOrderController extends Controller
                 "success" => true,
                 "message" => "successfully logged and updated Orders",
             );
-
             return $data;
         } catch (Exception $ex) {
-            $this->out->writeln('Error Calling listener order webhook.');
             $data = array(
                 "errors" => true,
                 "success" => false,
