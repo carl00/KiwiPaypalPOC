@@ -540,19 +540,48 @@ class ApiSubscriptionController extends Controller
             $this->out->writeln('Calling listener subscriptions webhook.');
             $json = file_get_contents('php://input');
             $action = json_decode($json, true);
-            $subscriptionId = $action["resource"]["id"];
-            $status = $action["resource"]["status"];
 
-            $logs = new Logs;
-            $logs->subscription_id = $subscriptionId;
-            $logs->status = $status;
-            $logs->meta = json_encode($action);
-            $logs->save();
 
-            if (Subscription::where('id', $subscriptionId)->exists()) {
-                Subscription::where('id', $subscriptionId)->update(['status' => $status]);
+            if($action["resource_type"] === "sale"){
+                if (substr( $action["resource"]["billing_agreement_id"], 0, 1 ) !== "I"){
+                    return "unknown id recieved, do not process";
+                }
+                $subscriptionId = $action["resource"]["billing_agreement_id"];
+                $summary = $action["summary"];
+                $status = $action["event_type"];
+
+                $logs = new Logs;
+                $logs->subscription_id = $subscriptionId;
+                $logs->summary = $summary;
+                $logs->status = $status;
+               
+                $logs->meta = json_encode($action);
+                $logs->save();
+
+                if (Subscription::where('id', $subscriptionId)->exists()) {
+                    Subscription::where('id', $subscriptionId)->update(['payment_summary' => $summary]);
+                }
             }
 
+            if($action["resource_type"] === "subscription"){
+                if (substr( $action["resource"]["id"], 0, 1 ) !== "I"){
+                    return "unknown id recieved, do not process";
+                }
+                $subscriptionId = $action["resource"]["id"];
+                $status = $action["resource"]["status"];
+                $summary = $action["summary"];
+
+                $logs = new Logs;
+                $logs->subscription_id = $subscriptionId;
+                $logs->status = $status;
+                $logs->summary = $summary;
+                $logs->meta = json_encode($action);
+                $logs->save();
+
+                if (Subscription::where('id', $subscriptionId)->exists()) {
+                    Subscription::where('id', $subscriptionId)->update(['status' => $status]);
+                }
+            }
             $data = array(
                 "errors" => false,
                 "success" => true,

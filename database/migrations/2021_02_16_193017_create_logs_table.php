@@ -19,6 +19,7 @@ class CreateLogsTable extends Migration
             $table->string('plan_id')->nullable();
             $table->string('subscription_id')->nullable();
             $table->string('status');
+            $table->string('summary')->nullable();
             $table->json('meta');
             $table->timestamps();
         });

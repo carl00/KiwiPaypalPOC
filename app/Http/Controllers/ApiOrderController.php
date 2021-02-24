@@ -254,9 +254,11 @@ class ApiOrderController extends Controller
             $action = json_decode($json, true);
             $orderId = $action["resource"]["id"];
             $status = $action["resource"]["status"];
+            $summary = $action["summary"];
             $logs = new Logs;
             $logs->order_id = $orderId;
             $logs->status = $status;
+            $logs->summary = $summary;
             $logs->meta = json_encode($action);
             $logs->save();
 

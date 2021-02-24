@@ -9,5 +9,5 @@ class Subscription extends Model
 {
     use HasFactory;
     protected $table = 'subscriptions';
-    protected $fillable = ['id', 'start_time', 'meta', 'quantity', 'subscriber', 'status', 'create_time'];
+    protected $fillable = ['id', 'start_time', 'meta', 'quantity', 'subscriber', 'status','summary','payment_summary','create_time'];
 }

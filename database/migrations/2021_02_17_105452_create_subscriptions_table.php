@@ -18,9 +18,11 @@ class CreateSubscriptionsTable extends Migration
             $table->string('plan_id');
             $table->string('start_time');
             $table->string('quantity');
+            $table->string('payment_summary')->nullable();
             $table->json('subscriber');
             $table->string('create_time');
             $table->string('status');
+            $table->string('summary')->nullable();
             $table->json('meta');
             $table->timestamps();
         });

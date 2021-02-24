@@ -21,6 +21,7 @@ class CreateOrdersTable extends Migration
             $table->string('amount');
             $table->string('minutes')->nullable();
             $table->string('status');
+            $table->string('summary')->nullable();
             $table->timestamps();
         });
     }
